@@ -13,6 +13,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <test.property>foo</test.property>
+    <cassandra.initialIp>127.0.0.10</cassandra.initialIp>
   </properties>
 
   <dependencies>
@@ -25,10 +27,19 @@
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-core</artifactId>
-      <version>2.0.1</version>
+      <version>2.0.3</version>
     </dependency>
   </dependencies>
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -39,6 +50,28 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9</version>
+        <executions>
+          <execution>
+            <id>reserve-network-port</id>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+            <!--Note that this has to happen during the process-resources phase, not
+            process-test-resources, because we have to do this before filtering the test
+            resources.-->
+            <phase>process-resources</phase>
+            <configuration>
+              <portNames>
+                <portName>cassandra.nativePort</portName>
+              </portNames>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -56,7 +89,6 @@
         </executions>
         <configuration>
           <numnodes>2</numnodes>
-          <initial.ip>127.0.0.10</initial.ip>
         </configuration>
       </plugin>
     </plugins>
